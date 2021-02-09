@@ -71,3 +71,5 @@ abstract class Plugin<S : Session>(sessionCreator: () -> S) {
     abstract fun getConfig()
 
 }
+
+class LanguageDescription(val languageName: String, val languageFamily: String, val supportedFileSuffix: Array<String>)
