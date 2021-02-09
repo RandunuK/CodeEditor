@@ -33,7 +33,7 @@ import kotlin.coroutines.CoroutineContext
  * Implementations of [Plugin] are able to save data for different editors inside a [Session], which
  * will be stored in this manager.
  */
-class SessionManager<T : Session>(val plugin: Plugin<T>, val sessionCreator: () -> T){
+class SessionManager<T : Session>(val plugin: Plugin<T>, val sessionCreator: () -> T) {
 
     /** Container for [Session] objects */
     private val sessions = SparseArray<T>()
@@ -45,7 +45,7 @@ class SessionManager<T : Session>(val plugin: Plugin<T>, val sessionCreator: () 
      * Get a existing [Session] or start a new [Session] for the given [sessionId]
      * @param sessionId The hash code of target [CodeEditor]
      */
-    fun getOrOpenSession(sessionId: Int, coroutineContext: CoroutineContext) : T {
+    fun getOrOpenSession(sessionId: Int, coroutineContext: CoroutineContext): T {
         var session = lock.read {
             sessions[sessionId]
         }
@@ -67,7 +67,7 @@ class SessionManager<T : Session>(val plugin: Plugin<T>, val sessionCreator: () 
     /**
      * When a [CodeEditor] is not going to be used  any more, it is called to release
      * [Session] to cut down memory usage.
-     * After calling this, given [Session] will be deleted and its [Session.release] is called.
+     * After calling this, given [Session] will be deleted and [Session.release] is called.
      *
      * **This behavior is controlled by editors. Users are not expected to call this by yourself**
      * @param sessionId The hash code of target [CodeEditor]
