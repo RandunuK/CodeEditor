@@ -5,8 +5,7 @@ A cool and optimized code editor on Android platform with good performance and n
 ***Work In Progress*** This project is still developing slowly. Bugs may be inside.
 It is **not** recommended to use this project for production use.   
 ***Note:***
-Sources for this project can be downloaded from [Releases](https://github.com/Rosemoe/CodeEditor/releases)
-but not from branch `main`. It is always working directory and can be unstable or with compilation errors.
+Branch `dev` has newest features and bug patches in editor and is developing.
 Any method or field can be changed, moved or even deleted at current period.     
 If you find any bug or require any enhancement, please send it to me by issues or other ways.    
    
