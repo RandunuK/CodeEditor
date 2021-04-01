@@ -162,6 +162,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private boolean mAutoIndent;
     private boolean mPaintLabel;
     private boolean mWordwrap;
+    private boolean mShowBlockLine;
     private boolean mUndoEnabled;
     private boolean mDisplayLnPanel;
     private boolean mOverScrollEnabled;
@@ -466,6 +467,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         mScale = true;
         mDrag = false;
         mWait = false;
+        mShowBlockLine = false;
         mBlockLineWidth = mDpUnit;
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         mClipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
@@ -493,7 +495,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         setSymbolCompletionEnabled(true);
         setEditable(true);
         setLineNumberEnabled(true);
-        setAutoCompletionOnComposing(true);
+        setAutoCompletionOnComposing(false);
     }
 
     /**
@@ -899,15 +901,16 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         offsetX = -getOffsetX();
 
         if (isLineNumberEnabled()) {
-            drawLineNumberBackground(canvas, offsetX, lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_NUMBER_BACKGROUND));
-            drawDivider(canvas, offsetX + lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_DIVIDER));
+            int zeroOffsetX = 0;
+            drawLineNumberBackground(canvas, zeroOffsetX, lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_NUMBER_BACKGROUND));
+            drawDivider(canvas, zeroOffsetX + lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_DIVIDER));
             int lineNumberColor = mColors.getColor(EditorColorScheme.LINE_NUMBER);
             for (long packed : postDrawLineNumbers) {
-                drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), offsetX, lineNumberWidth, lineNumberColor);
+                drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), zeroOffsetX, lineNumberWidth, lineNumberColor);
             }
         }
 
-        if (!isWordwrap()) {
+        if (!isWordwrap() && mShowBlockLine) {
             drawBlockLines(canvas, textOffset);
         }
 
@@ -1954,10 +1957,12 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         }
         final String[] charSet = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
         float single = 0f;
+        float halfCharWidthPadding = 0f;
         for (String ch : charSet) {
-            single = Math.max(single, mPaintOther.measureText(ch));
+            halfCharWidthPadding = mPaintOther.measureText(ch);
+            single = Math.max(single, halfCharWidthPadding);
         }
-        return single * count;
+        return single * count + halfCharWidthPadding / 2;
     }
 
     /**
@@ -3484,7 +3489,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         if (!isEditable() || !isEnabled()) {
             return null;
         }
-        outAttrs.inputType = mInputType != 0 ? mInputType : EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
+        outAttrs.inputType = mInputType != 0 ? mInputType : EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
         outAttrs.initialSelStart = getCursor() != null ? getCursor().getLeft() : 0;
         outAttrs.initialSelEnd = getCursor() != null ? getCursor().getRight() : 0;
         outAttrs.initialCapsMode = mConnection.getCursorCapsMode(0);
@@ -3525,7 +3530,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
                     cursorChangeExternal();
                 }
                 return true;
-            case KeyEvent.KEYCODE_FORWARD_DEL:{
+            case KeyEvent.KEYCODE_FORWARD_DEL: {
                 if (isEditable() && mConnection != null) {
                     mConnection.deleteSurroundingText(0, 1);
                     cursorChangeExternal();
@@ -3782,7 +3787,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         // Visibility & State shift
         exitSelectModeIfNeeded();
         // Auto completion
-        if ((mConnection.mComposingLine == -1 || mCompletionOnComposing) && endColumn != 0 && startLine == endLine) {
+        if ((mConnection.mComposingLine == -1 && mCompletionOnComposing) && endColumn != 0 && startLine == endLine) {
             int end = endColumn;
             while (endColumn > 0) {
                 if (mLanguage.isAutoCompleteChar(content.charAt(endLine, endColumn - 1))) {
@@ -3919,6 +3924,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
 
         /**
          * Selected text is clicked
+         *
          * @param event Event
          */
         void onSelectedTextClicked(MotionEvent event);

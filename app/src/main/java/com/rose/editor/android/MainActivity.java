@@ -41,6 +41,7 @@ import io.github.rosemoe.editor.langs.desc.CppDescription;
 import io.github.rosemoe.editor.langs.desc.JavaScriptDescription;
 import io.github.rosemoe.editor.langs.html.HTMLLanguage;
 import io.github.rosemoe.editor.langs.java.JavaLanguage;
+import io.github.rosemoe.editor.langs.python.PythonLanguage;
 import io.github.rosemoe.editor.langs.s5droid.S5droidAutoComplete;
 import io.github.rosemoe.editor.langs.s5droid.S5droidLanguage;
 import io.github.rosemoe.editor.langs.universal.UniversalLanguage;
@@ -91,8 +92,8 @@ public class MainActivity extends Activity {
         });
         editor.setTypefaceText(Typeface.MONOSPACE);
         editor.setOverScrollEnabled(false);
-        editor.setEditorLanguage(new JavaLanguage());
-        editor.setNonPrintablePaintingFlags(CodeEditor.FLAG_DRAW_WHITESPACE_LEADING | CodeEditor.FLAG_DRAW_LINE_SEPARATOR);
+        editor.setEditorLanguage(new PythonLanguage());
+        //editor.setNonPrintablePaintingFlags(CodeEditor.FLAG_DRAW_WHITESPACE_LEADING | CodeEditor.FLAG_DRAW_LINE_SEPARATOR);
         editor.setText("/**\n * Demo\n */\n@SuppressWarnings(/**/\"unused\")\n" +
                 "public class Main {\n\n\tpublic static void main(String[] args) {\n\t\t" +
                 "// Comment\n\t\tSystem.out.println(\"Hello\");\n\t}\n\n}\n");

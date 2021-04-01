@@ -420,10 +420,20 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
             mEditor.getHorizontalEdgeEffect().onPull((leftOrRight ? distanceX : -distanceX) / mEditor.getMeasuredWidth(), !leftOrRight ? 1 - displacement : displacement);
             notifyX = false;
         }
+
+        int verticalScroll = endY - mScroller.getCurrY();
+        int horizontalScroll = endX - mScroller.getCurrX();
+
+        //lock diagonal scrolling
+        if (Math.abs(verticalScroll) > Math.abs(horizontalScroll)) {
+            horizontalScroll = 0;
+        } else {
+            verticalScroll = 0;
+        }
         mScroller.startScroll(mScroller.getCurrX(),
                 mScroller.getCurrY(),
-                endX - mScroller.getCurrX(),
-                endY - mScroller.getCurrY(), 0);
+                horizontalScroll,
+                verticalScroll, 0);
         final float minOverPull = 0;
         if (notifyY && mScroller.getCurrY() + distanceY <= -minOverPull) {
             mEditor.getVerticalEdgeEffect().onPull(-distanceY / mEditor.getMeasuredHeight(), Math.max(0, Math.min(1, e2.getX() / mEditor.getWidth())));
