@@ -2204,9 +2204,11 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     public void ensurePositionVisible(int line, int column) {
         float[] layoutOffset = mLayout.getCharLayoutOffset(line, column);
         // x offset is the left of character
-        float xOffset = layoutOffset[1] + measureTextRegionOffset();
+        float xOffset = layoutOffset[1] + measureTextRegionOffset(); // reduce line number bar width for left side -120
         // y offset is the bottom of row
         float yOffset = layoutOffset[0];
+
+        float lineNumberWidth = measureLineNumber();
 
         float targetY = getOffsetY();
         float targetX = getOffsetX();
@@ -2221,10 +2223,13 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         }
         float charWidth = column == 0 ? 0 : measureText(mText.getLine(line), column - 1, 1);
         if (xOffset < getOffsetX()) {
-            targetX = xOffset - charWidth * 0.2f;
+            //cursor is far left
+            //hence reduce line number width
+            targetX = -charWidth - lineNumberWidth * 2 + xOffset - charWidth * 0.2f;
         }
         if (xOffset + charWidth > getOffsetX() + getWidth()) {
-            targetX = xOffset + charWidth * 0.8f - getWidth();
+            //cursor is far right
+            targetX = lineNumberWidth + xOffset + charWidth * 0.8f - getWidth();
         }
 
         targetX = Math.max(0, Math.min(getScrollMaxX(), targetX));
