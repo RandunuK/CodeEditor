@@ -2013,6 +2013,10 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         }
     }
 
+    public void insertTab() {
+        commitTab();
+    }
+
     /**
      * Commit a tab to cursor
      */
