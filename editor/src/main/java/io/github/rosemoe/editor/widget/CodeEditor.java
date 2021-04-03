@@ -2212,12 +2212,12 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      */
     public void ensurePositionVisible(int line, int column) {
         float[] layoutOffset = mLayout.getCharLayoutOffset(line, column);
+        float lineNumberBarWidth = measureTextRegionOffset();
         // x offset is the left of character
-        float xOffset = layoutOffset[1] + measureTextRegionOffset(); // reduce line number bar width for left side -120
+        float xOffset = layoutOffset[1] + lineNumberBarWidth; // reduce line number bar width for left side -120
         // y offset is the bottom of row
         float yOffset = layoutOffset[0];
 
-        float lineNumberWidth = measureLineNumber();
 
         float targetY = getOffsetY();
         float targetX = getOffsetX();
@@ -2231,14 +2231,15 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             targetY = yOffset - getHeight() + getRowHeight() * 0.1f;
         }
         float charWidth = column == 0 ? 0 : measureText(mText.getLine(line), column - 1, 1);
-        if (xOffset < getOffsetX()) {
+        if (xOffset - charWidth * 2 - lineNumberBarWidth < getOffsetX()) {
             //cursor is far left
             //hence reduce line number width
-            targetX = -charWidth - lineNumberWidth * 2 + xOffset - charWidth * 0.2f;
+            targetX = -charWidth - lineNumberBarWidth * 2 + xOffset - charWidth * 0.2f;
         }
+
         if (xOffset + charWidth > getOffsetX() + getWidth()) {
             //cursor is far right
-            targetX = lineNumberWidth + xOffset + charWidth * 0.8f - getWidth();
+            targetX = lineNumberBarWidth + xOffset + charWidth * 0.8f - getWidth();
         }
 
         targetX = Math.max(0, Math.min(getScrollMaxX(), targetX));
