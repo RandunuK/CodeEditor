@@ -1628,13 +1628,22 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * Draw cursor
      */
     private void drawCursor(Canvas canvas, float centerX, int row, RectF handle, boolean insert) {
+        float lineNumberWidth = measureTextRegionOffset();
         if (!insert || mCursorBlink == null || mCursorBlink.visibility) {
             mRect.top = getRowTop(row) - getOffsetY();
             mRect.bottom = getRowBottom(row) - getOffsetY();
             mRect.left = centerX - mInsertSelWidth / 2f;
             mRect.right = centerX + mInsertSelWidth / 2f;
-            drawColor(canvas, mColors.getColor(EditorColorScheme.SELECTION_INSERT), mRect);
+
+            //use to hide cursor when it behind the fixed line number panel
+            if (centerX >= lineNumberWidth) {
+                drawColor(canvas, mColors.getColor(EditorColorScheme.SELECTION_INSERT), mRect);
+            } else {
+                return;
+            }
         }
+
+
         if (handle != null) {
             drawHandle(canvas, row, centerX, handle);
         }
