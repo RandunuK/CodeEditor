@@ -36,7 +36,7 @@ public class PythonLanguage implements EditorLanguage {
 
     @Override
     public AutoCompleteProvider getAutoCompleteProvider() {
-        return null;
+        return new PythonAutocomplete();
     }
 
     @Override
@@ -88,11 +88,6 @@ public class PythonLanguage implements EditorLanguage {
     @Override
     public CharSequence format(CharSequence text) {
         return text;
-    }
-
-    @Override
-    public SymbolPairMatch getSymbolPairs() {
-        return null;
     }
 
     private NewlineHandler[] newlineHandlers = new NewlineHandler[]{new ColonHandler()};
