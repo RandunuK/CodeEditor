@@ -3535,7 +3535,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         if (!isEditable() || !isEnabled()) {
             return null;
         }
-        outAttrs.inputType = mInputType != 0 ? mInputType : EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
+        outAttrs.inputType = mInputType != 0 ? mInputType : EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD  | EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
         outAttrs.initialSelStart = getCursor() != null ? getCursor().getLeft() : 0;
         outAttrs.initialSelEnd = getCursor() != null ? getCursor().getRight() : 0;
         outAttrs.initialCapsMode = mConnection.getCursorCapsMode(0);
