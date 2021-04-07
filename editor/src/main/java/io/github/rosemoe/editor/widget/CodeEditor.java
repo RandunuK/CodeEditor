@@ -163,6 +163,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private boolean mEditable;
     private boolean mAutoIndentEnabled;
     private boolean mWordwrap;
+    private boolean mShowBlockLine;
     private boolean mUndoEnabled;
     private boolean mDisplayLnPanel;
     private boolean mOverScrollEnabled;
@@ -470,6 +471,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         mLineNumberAlign = Paint.Align.RIGHT;
         mDrag = false;
         mWait = false;
+        mShowBlockLine = false;
         mBlockLineWidth = mDpUnit / 1.5f;
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         mClipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
@@ -854,9 +856,11 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     }
 
     private long startClock;
+
     private void record() {
         startClock = System.nanoTime();
     }
+
     private void print(String processName) {
         Log.d(LOG_TAG, "- Process " + processName + " used " + (System.nanoTime() - startClock) / 1e6 + " ms");
     }
@@ -931,7 +935,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         }
         //print("ln");
 
-        if (!isWordwrap()) {
+        if (!isWordwrap() && mShowBlockLine) {
             drawBlockLines(canvas, textOffset);
         }
 
@@ -1904,7 +1908,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             text[count++] = (char) ('0' + digit);
             copy /= 10;
         }
-        for (int i = 0, j = count - 1;i < j;i++,j--) {
+        for (int i = 0, j = count - 1; i < j; i++, j--) {
             char tmp = text[i];
             text[i] = text[j];
             text[j] = tmp;
@@ -2176,13 +2180,13 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
 
     /**
      * Specify whether show auto completion window even the input method is in composing state.
-     *
+     * <p>
      * This is useful when the user uses an input method that does not support the attitude {@link EditorInfo#TYPE_TEXT_FLAG_NO_SUGGESTIONS}
-     *
+     * <p>
      * Note:
      * Composing texts are marked by an underline. When this switch is set to false, the editor
      * will not provide auto completion when there is any composing text in editor.
-     *
+     * <p>
      * This is enabled by default now
      */
     public void setAutoCompletionOnComposing(boolean completionOnComposing) {
@@ -2191,7 +2195,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
 
     /**
      * Specify whether we should provide any auto completion
-     *
+     * <p>
      * If this is set to false, the completion window will never show and auto completion item
      * provider will never be called.
      */
