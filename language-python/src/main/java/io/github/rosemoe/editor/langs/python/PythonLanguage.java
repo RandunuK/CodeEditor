@@ -103,11 +103,6 @@ public class PythonLanguage implements EditorLanguage {
         return text;
     }
 
-    @Override
-    public SymbolPairMatch getSymbolPairs() {
-        return null;
-    }
-
     private NewlineHandler[] newlineHandlers = new NewlineHandler[]{new ColonHandler()};
 
     @Override
