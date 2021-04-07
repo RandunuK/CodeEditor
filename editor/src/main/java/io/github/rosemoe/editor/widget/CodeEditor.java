@@ -93,7 +93,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     /**
      * The default size when creating the editor object. Unit is sp.
      */
-    public static final int DEFAULT_TEXT_SIZE = 20;
+    public static final int DEFAULT_TEXT_SIZE = 16;
     /**
      * The default cursor blinking period
      */
