@@ -491,7 +491,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         setTabWidth(4);
         setHighlightCurrentLine(true);
         setAutoIndentEnabled(true);
-        setAutoCompletionEnabled(true);
+        setAutoCompletionEnabled(false);
         setVerticalScrollBarEnabled(true);
         setHighlightCurrentBlock(true);
         setHighlightSelectedText(true);
@@ -934,11 +934,12 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
 
         //record();
         if (isLineNumberEnabled()) {
-            drawLineNumberBackground(canvas, offsetX, lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_NUMBER_BACKGROUND));
-            drawDivider(canvas, offsetX + lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_DIVIDER));
+            int zeroOffsetX = 0;
+            drawLineNumberBackground(canvas, zeroOffsetX, lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_NUMBER_BACKGROUND));
+            drawDivider(canvas, zeroOffsetX + lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_DIVIDER));
             int lineNumberColor = mColors.getColor(EditorColorScheme.LINE_NUMBER);
             for (long packed : postDrawLineNumbers) {
-                drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), offsetX, lineNumberWidth, lineNumberColor);
+                drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), zeroOffsetX, lineNumberWidth, lineNumberColor);
             }
         }
         //print("ln");
