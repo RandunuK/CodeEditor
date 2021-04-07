@@ -1648,12 +1648,19 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * Draw cursor
      */
     private void drawCursor(Canvas canvas, float centerX, int row, RectF handle, boolean insert) {
+        float lineNumberWidth = measureTextRegionOffset();
         if (!insert || mCursorBlink == null || mCursorBlink.visibility) {
             mRect.top = getRowTop(row) - getOffsetY();
             mRect.bottom = getRowBottom(row) - getOffsetY();
             mRect.left = centerX - mInsertSelWidth / 2f;
             mRect.right = centerX + mInsertSelWidth / 2f;
-            drawColor(canvas, mColors.getColor(EditorColorScheme.SELECTION_INSERT), mRect);
+
+            //use to hide cursor when it behind the fixed line number panel
+            if (centerX >= lineNumberWidth) {
+                drawColor(canvas, mColors.getColor(EditorColorScheme.SELECTION_INSERT), mRect);
+            } else {
+                return;
+            }
         }
         if (handle != null) {
             drawHandle(canvas, row, centerX, handle);
@@ -2049,6 +2056,8 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         }
     }
 
+
+
     /**
      * Commit a tab to cursor
      */
@@ -2259,6 +2268,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      */
     public void ensurePositionVisible(int line, int column) {
         float[] layoutOffset = mLayout.getCharLayoutOffset(line, column);
+        float lineNumberBarWidth = measureTextRegionOffset();
         // x offset is the left of character
         float xOffset = layoutOffset[1] + measureTextRegionOffset();
         // y offset is the bottom of row
@@ -2276,11 +2286,15 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             targetY = yOffset - getHeight() + getRowHeight() * 0.1f;
         }
         float charWidth = column == 0 ? 0 : measureText(mText.getLine(line), column - 1, 1);
-        if (xOffset < getOffsetX()) {
-            targetX = xOffset - charWidth * 0.2f;
+        if (xOffset - charWidth * 2 - lineNumberBarWidth < getOffsetX()) {
+            //cursor is far left
+            //hence reduce line number width
+            targetX = -charWidth - lineNumberBarWidth * 2 + xOffset - charWidth * 0.2f;
         }
+
         if (xOffset + charWidth > getOffsetX() + getWidth()) {
-            targetX = xOffset + charWidth * 0.8f - getWidth();
+            //cursor is far right
+            targetX = lineNumberBarWidth + xOffset + charWidth * 0.8f - getWidth();
         }
 
         targetX = Math.max(0, Math.min(getScrollMaxX(), targetX));
@@ -2500,6 +2514,13 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      */
     public void setInputType(int inputType) {
         mInputType = inputType;
+    }
+
+    /**
+     * insert tab
+     */
+    public void insertTab() {
+        commitTab();
     }
 
     /**
