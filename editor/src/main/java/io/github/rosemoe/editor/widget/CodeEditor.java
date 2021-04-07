@@ -501,7 +501,15 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         setSymbolCompletionEnabled(true);
         setEditable(true);
         setLineNumberEnabled(true);
-        setAutoCompletionOnComposing(true);
+        /**
+         * @TODO implement proper way to turn off auto completion
+         * https://github.com/Rosemoe/CodeEditor/issues/40#issuecomment-812811862
+         */
+        /**
+         * @NOTE! this is not the place to turn off autocompletion
+         */
+        setAutoCompletionOnComposing(false);
+
         // Issue #41 View being highlighted when focused on Android 11
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             setDefaultFocusHighlightEnabled(false);
