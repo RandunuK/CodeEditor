@@ -20,13 +20,15 @@
     android:id="@+id/text_compose_panel"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
     <HorizontalScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp">
+        android:layout_margin="12dp">
 
         <LinearLayout
             android:id="@+id/linearLayout"

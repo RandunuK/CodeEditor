@@ -21,10 +21,10 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatTextView;
 import androidx.cardview.widget.CardView;
 
 import io.github.rosemoe.editor.R;
@@ -32,7 +32,7 @@ import io.github.rosemoe.editor.R;
 public class TextActionButton extends CardView implements View.OnClickListener {
     private LayoutInflater mLayoutInflater;
     private CardView mCardView;
-    private AppCompatTextView mTextView;
+    private TextView mTextView;
     private View.OnClickListener mOnCardClickListener;
 
     public TextActionButton(@NonNull Context context) {

@@ -75,6 +75,27 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
     }
 
     /**
+     * @retuern Whether the provided character is a whitespace
+     */
+    private boolean isWhitespace(char c) {
+        return (c == '\t' || c == ' ' || c == '\f' || c == '\n' || c == '\r');
+    }
+
+    /**
+     * Handles the selected text click event
+     */
+    private void handleSelectedTextClick(MotionEvent e, int line, int column) {
+        if (mEditor.getTextActionPresenter() instanceof EditorTextActionWindowV1) {
+            char text = mEditor.getText().charAt(line, column);
+            if (isWhitespace(text) || ((EditorTextActionWindowV1) mEditor.getTextActionPresenter()).isShowing())
+                mEditor.setSelection(line, column);
+            else mEditor.getTextActionPresenter().onSelectedTextClicked(e);
+        } else {
+            mEditor.getTextActionPresenter().onSelectedTextClicked(e);
+        }
+    }
+
+    /**
      * Whether we should draw scroll bars
      *
      * @return whether draw scroll bars
@@ -349,7 +370,7 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
         int line = IntPair.getFirst(res);
         int column = IntPair.getSecond(res);
         if (mEditor.getCursor().isSelected() && mEditor.getCursor().isInSelectedRegion(line, column) && !mEditor.isOverMaxY(e.getY())) {
-            mEditor.getTextActionPresenter().onSelectedTextClicked(e);
+            handleSelectedTextClick(e, line, column);
         } else {
             notifyLater();
             mEditor.setSelection(line, column);
@@ -629,4 +650,3 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
 
     }
 }
-

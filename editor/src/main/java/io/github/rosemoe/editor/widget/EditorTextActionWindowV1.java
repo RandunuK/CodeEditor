@@ -19,11 +19,12 @@ import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
+import android.widget.LinearLayout;
 
 import io.github.rosemoe.editor.R;
 
@@ -32,45 +33,54 @@ import io.github.rosemoe.editor.R;
  *
  * @author Rose
  */
-class EditorTextActionWindow extends EditorBasePopupWindow implements View.OnClickListener, CodeEditor.EditorTextActionPresenter {
+class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnClickListener, CodeEditor.EditorTextActionPresenter {
     private final CodeEditor mEditor;
-    private final Button mPasteBtn;
+    private final TextActionButton mPasteBtn;
+    private final TextActionButton mSelectAll;
+    private final LinearLayout mContainer;
+    private float mDpUnit = 0f;
 
     /**
      * Create a panel for the given editor
      *
      * @param editor Target editor
      */
-    public EditorTextActionWindow(CodeEditor editor) {
+    public EditorTextActionWindowV1(CodeEditor editor) {
         super(editor);
         mEditor = editor;
+        mDpUnit = mEditor.getDpUnit();
         // Since popup window does provide decor view, we have to pass null to this method
         @SuppressLint("InflateParams")
-        View root = LayoutInflater.from(editor.getContext()).inflate(R.layout.text_compose_panel, null);
-        Button selectAll = root.findViewById(R.id.panel_btn_select_all);
-        Button cut = root.findViewById(R.id.panel_btn_cut);
-        Button copy = root.findViewById(R.id.panel_btn_copy);
-        mPasteBtn = root.findViewById(R.id.panel_btn_paste);
-        selectAll.setOnClickListener(this);
+        View root = LayoutInflater.from(editor.getContext()).inflate(R.layout.text_compose_panel_v1, null);
+        mSelectAll = root.findViewById(R.id.panel_card_select_all);
+        mContainer = root.findViewById(R.id.text_compose_panel);
+        TextActionButton cut = root.findViewById(R.id.panel_card_cut);
+        TextActionButton copy = root.findViewById(R.id.panel_card_copy);
+        mPasteBtn = root.findViewById(R.id.panel_card_paste);
+        mSelectAll.setOnClickListener(this);
         cut.setOnClickListener(this);
         copy.setOnClickListener(this);
         mPasteBtn.setOnClickListener(this);
         GradientDrawable gd = new GradientDrawable();
-        gd.setCornerRadius(5);
+        gd.setCornerRadius(mDpUnit * 8);
         gd.setColor(0xffffffff);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             root.setBackground(gd);
         } else {
             root.setBackgroundDrawable(gd);
         }
         setContentView(root);
+
     }
 
     @Override
     public void onBeginTextSelect() {
-        float dpUnit = mEditor.getDpUnit();
-        setHeight((int) (dpUnit * 60));
-        setWidth((int) (dpUnit * 230));
+        setHeight((int) (LinearLayout.LayoutParams.WRAP_CONTENT));
+        setWidth((int) (LinearLayout.LayoutParams.WRAP_CONTENT));
+        //setHeight((int) (mDpUnit * 60));
+        //setWidth((int) (mDpUnit * 300));
+        //onSelectedTextClicked(null);
     }
 
     @Override
@@ -85,7 +95,7 @@ class EditorTextActionWindow extends EditorBasePopupWindow implements View.OnCli
 
     @Override
     public void onSelectedTextClicked(MotionEvent event) {
-        EditorTextActionWindow panel = this;
+        EditorTextActionWindowV1 panel = this;
         if (panel.isShowing()) {
             panel.hide();
         } else {
@@ -128,11 +138,15 @@ class EditorTextActionWindow extends EditorBasePopupWindow implements View.OnCli
             float handleLeftX = mEditor.getOffset(left, mEditor.getCursor().getLeftColumn());
             float handleRightX = mEditor.getOffset(right, mEditor.getCursor().getRightColumn());
             int panelX = (int) ((handleLeftX + handleRightX) / 2f);
-            panel.setExtendedX(panelX);
+            panel.setExtendedX(mDpUnit * 28);
             panel.setExtendedY(panelY);
+            Log.d("onSelectedTextClicked", "panelX: " + panelX + ", panelY: " + panelY);
             panel.show();
+            mContainer.requestFocus();
+            mSelectAll.clearFocus();
         }
     }
+
 
     @Override
     public boolean shouldShowCursor() {
@@ -158,17 +172,17 @@ class EditorTextActionWindow extends EditorBasePopupWindow implements View.OnCli
     @Override
     public void onClick(View p1) {
         int id = p1.getId();
-        if (id == R.id.panel_btn_select_all) {
+        if (id == R.id.panel_card_select_all) {
             mEditor.selectAll();
-        } else if (id == R.id.panel_btn_cut) {
+        } else if (id == R.id.panel_card_cut) {
             mEditor.copyText();
             if (mEditor.getCursor().isSelected()) {
                 mEditor.getCursor().onDeleteKeyPressed();
             }
-        } else if (id == R.id.panel_btn_paste) {
+        } else if (id == R.id.panel_card_paste) {
             mEditor.pasteText();
             mEditor.setSelection(mEditor.getCursor().getRightLine(), mEditor.getCursor().getRightColumn());
-        } else if (id == R.id.panel_btn_copy) {
+        } else if (id == R.id.panel_card_copy) {
             mEditor.copyText();
             mEditor.setSelection(mEditor.getCursor().getRightLine(), mEditor.getCursor().getRightColumn());
         }
@@ -176,3 +190,4 @@ class EditorTextActionWindow extends EditorBasePopupWindow implements View.OnCli
     }
 
 }
+

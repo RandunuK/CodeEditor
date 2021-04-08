@@ -22,13 +22,11 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
@@ -731,7 +729,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         if (mode == TextActionMode.ACTION_MODE) {
             mTextActionPresenter = new EditorTextActionModeStarter(this);
         } else {
-            mTextActionPresenter = new EditorTextActionWindow(this);
+            mTextActionPresenter = new EditorTextActionWindowV1(this);
         }
     }
 
