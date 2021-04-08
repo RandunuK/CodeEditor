@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<?xml version="1.0" encoding="utf-8"?><!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ~   Copyright 2020-2021 Rosemoe
   ~
   ~   Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,16 +17,21 @@
 <resources>
 
     <declare-styleable name="editor">
-        <attr name="text" format="string"/>
-        <attr name="textSize" format="dimension"/>
-        <attr name="dividerWidth" format="dimension"/>
-        <attr name="lineNumberVisible" format="boolean"/>
-        <attr name="autoCompleteEnabled" format="boolean"/>
-        <attr name="symbolCompletionEnabled" format="boolean"/>
-        <attr name="cursorBlinkPeriod" format="integer"/>
-        <attr name="scrollbarsEnabled" format="boolean"/>
-        <attr name="verticalScrollbarEnabled" format="boolean"/>
-        <attr name="horizontalScrollbarEnabled" format="boolean"/>
+        <attr name="text" format="string" />
+        <attr name="textSize" format="dimension" />
+        <attr name="dividerWidth" format="dimension" />
+        <attr name="lineNumberVisible" format="boolean" />
+        <attr name="autoCompleteEnabled" format="boolean" />
+        <attr name="symbolCompletionEnabled" format="boolean" />
+        <attr name="cursorBlinkPeriod" format="integer" />
+        <attr name="scrollbarsEnabled" format="boolean" />
+        <attr name="verticalScrollbarEnabled" format="boolean" />
+        <attr name="horizontalScrollbarEnabled" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="text_action">
+        <attr name="ta_text" format="string" />
+        <attr name="ta_textSize" format="dimension" />
+        <attr name="ta_drawableTop" format="integer" />
     </declare-styleable>
 
 </resources>

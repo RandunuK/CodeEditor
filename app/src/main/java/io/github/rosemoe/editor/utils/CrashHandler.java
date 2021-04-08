@@ -66,6 +66,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
     @Override
     public void uncaughtException(Thread thread, Throwable ex) {
         saveCrashInfo(thread.getName(), ex);
+        Log.e("XXTAG", "uncaughtException: ", ex);
         // Save the world, hopefully
         if (Looper.myLooper() != null) {
             while (true) {

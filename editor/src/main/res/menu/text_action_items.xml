@@ -15,19 +15,20 @@
   ~   limitations under the License.
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
-<resources>
-
-    <item name="paste" type="string">Paste</item>
-    <item name="copy" type="string">Copy</item>
-    <item name="selectAll" type="string" formatted="true">Select All</item>
-    <item name="saveToProject" type="string" translatable="false" >Project</item>
-    <item name="cut" type="string">Cut</item>
-    <item name="last" type="string">Last</item>
-    <item name="next" type="string">Next</item>
-    <item name="replace" type="string">Replace</item>
-    <item name="replaceAll" type="string">Replace All</item>
-    <item name="replacement" type="string">Replacement</item>
-    <item name="cancel" type="string">Cancel</item>
-    <item name="text_to_search" type="string">Text to search</item>
-
-</resources>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/action_copy"
+        android:title="@string/copy"
+        android:icon="@drawable/round_content_copy_20" />
+    <item android:id="@+id/action_paste"
+        android:title="@string/paste"
+        android:icon="@drawable/round_content_paste_20" />
+    <item android:id="@+id/action_cut"
+        android:title="@string/cut"
+        android:icon="@drawable/round_content_cut_20" />
+    <item android:id="@+id/action_select_all"
+        android:title="@string/selectAll"
+        android:icon="@drawable/round_select_all_20" />
+    <item android:id="@+id/action_project"
+        android:title="@string/saveToProject"
+        android:icon="@drawable/round_save_20" />
+</menu>

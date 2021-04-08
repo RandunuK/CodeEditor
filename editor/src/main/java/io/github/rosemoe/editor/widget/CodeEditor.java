@@ -22,11 +22,13 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
@@ -218,6 +220,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private Paint.FontMetricsInt mGraphMetrics;
     private CursorBlink mCursorBlink;
     private SymbolPairMatch mOverrideSymbolPairs;
+    private Context mContext;
 
     public CodeEditor(Context context) {
         this(context, null);
@@ -233,6 +236,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
 
     public CodeEditor(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        mContext = context;
         initialize();
     }
 
@@ -487,7 +491,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         mOverrideSymbolPairs = new SymbolPairMatch();
         setEditorLanguage(null);
         setText(null);
-        setTextActionMode(TextActionMode.ACTION_MODE);
+        setTextActionMode(TextActionMode.POPUP_WINDOW);
         setTabWidth(4);
         setHighlightCurrentLine(true);
         setAutoIndentEnabled(true);
@@ -2057,7 +2061,6 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     }
 
 
-
     /**
      * Commit a tab to cursor
      */
@@ -3556,7 +3559,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         if (!isEditable() || !isEnabled()) {
             return null;
         }
-        outAttrs.inputType = mInputType != 0 ? mInputType : EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD  | EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
+        outAttrs.inputType = mInputType != 0 ? mInputType : EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
         outAttrs.initialSelStart = getCursor() != null ? getCursor().getLeft() : 0;
         outAttrs.initialSelEnd = getCursor() != null ? getCursor().getRight() : 0;
         outAttrs.initialCapsMode = mConnection.getCursorCapsMode(0);

@@ -68,7 +68,6 @@ class EditorTextActionModeStarter implements CodeEditor.EditorTextActionPresente
                 menu.add(0, 3, 0, mEditor.getContext().getString(android.R.string.paste))
                         .setShowAsActionFlags(2)
                         .setIcon(array.getDrawable(3));
-
                 array.recycle();
                 return true;
             }
@@ -135,5 +134,4 @@ class EditorTextActionModeStarter implements CodeEditor.EditorTextActionPresente
     public boolean shouldShowCursor() {
         return true;
     }
-
 }
