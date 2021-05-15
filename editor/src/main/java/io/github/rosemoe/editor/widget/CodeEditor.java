@@ -81,7 +81,7 @@ import io.github.rosemoe.editor.util.IntPair;
  * CodeEditor is a editor that can highlight text regions by doing basic syntax analyzing
  * This project in GitHub: https://github.com/Rosemoe/CodeEditor
  * <p>
- * Note:
+ *  Note:
  * Row and line are different in this editor
  * When we say 'row', it means a line displayed on screen. It can be a part of a line in the text object.
  * When we say 'line', it means a real line in the original text.
