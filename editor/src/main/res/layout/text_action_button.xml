@@ -21,17 +21,21 @@
     android:elevation="0dp"
     app:cardCornerRadius="0dp">
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/text_action_text_view_name"
+        app:shapeAppearanceOverlay="@style/RoundOutlinedButton.IconOnly"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableTop="@drawable/round_select_all_20"
-        android:drawablePadding="6dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:gravity="center"
-        android:minEms="5"
-        android:textAllCaps="true"
+        style="@style/TextButton.IconOnly"
         android:text="@string/selectAll"
-        android:textSize="10sp"/>
+        app:iconGravity="textTop"
+        app:iconTint="@color/textActionNameColor"
+        app:iconPadding="8dp"
+        android:textSize="10sp"
+        android:textColor="@color/textActionNameColor"
+        app:icon="@drawable/round_select_all_20">
+    </com.google.android.material.button.MaterialButton>
+
+
 
 </androidx.cardview.widget.CardView>

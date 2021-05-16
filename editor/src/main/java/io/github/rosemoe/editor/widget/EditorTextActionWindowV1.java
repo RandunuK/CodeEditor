@@ -17,6 +17,7 @@ package io.github.rosemoe.editor.widget;
 
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.util.Log;
@@ -25,6 +26,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+
+import com.google.android.material.button.MaterialButton;
 
 import io.github.rosemoe.editor.R;
 
@@ -35,8 +38,8 @@ import io.github.rosemoe.editor.R;
  */
 class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnClickListener, CodeEditor.EditorTextActionPresenter {
     private final CodeEditor mEditor;
-    private final TextActionButton mPasteBtn;
-    private final TextActionButton mSelectAll;
+    private final MaterialButton mPasteBtn;
+    private final MaterialButton mSelectAll;
     private final LinearLayout mContainer;
     private float mDpUnit = 0f;
 
@@ -54,8 +57,8 @@ class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnC
         View root = LayoutInflater.from(editor.getContext()).inflate(R.layout.text_compose_panel_v1, null);
         mSelectAll = root.findViewById(R.id.panel_card_select_all);
         mContainer = root.findViewById(R.id.text_compose_panel);
-        TextActionButton cut = root.findViewById(R.id.panel_card_cut);
-        TextActionButton copy = root.findViewById(R.id.panel_card_copy);
+        MaterialButton cut = root.findViewById(R.id.panel_card_cut);
+        MaterialButton copy = root.findViewById(R.id.panel_card_copy);
         mPasteBtn = root.findViewById(R.id.panel_card_paste);
         mSelectAll.setOnClickListener(this);
         cut.setOnClickListener(this);
@@ -63,6 +66,7 @@ class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnC
         mPasteBtn.setOnClickListener(this);
         GradientDrawable gd = new GradientDrawable();
         gd.setCornerRadius(mDpUnit * 8);
+        gd.setStroke(1, 0xff808080);
         gd.setColor(0xffffffff);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -70,7 +74,9 @@ class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnC
         } else {
             root.setBackgroundDrawable(gd);
         }
+
         setContentView(root);
+
 
     }
 
@@ -164,7 +170,7 @@ class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnC
     public void show() {
         updateBtnState();
         if (Build.VERSION.SDK_INT >= 21) {
-            setElevation(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, Resources.getSystem().getDisplayMetrics()));
+            setElevation(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, Resources.getSystem().getDisplayMetrics()));
         }
         super.show();
     }

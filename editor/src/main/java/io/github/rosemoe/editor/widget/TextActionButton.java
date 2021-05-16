@@ -27,12 +27,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
+import com.google.android.material.button.MaterialButton;
+
 import io.github.rosemoe.editor.R;
 
 public class TextActionButton extends CardView implements View.OnClickListener {
     private LayoutInflater mLayoutInflater;
     private CardView mCardView;
-    private TextView mTextView;
+    private MaterialButton mTextView;
     private View.OnClickListener mOnCardClickListener;
 
     public TextActionButton(@NonNull Context context) {
@@ -63,7 +65,8 @@ public class TextActionButton extends CardView implements View.OnClickListener {
                 R.styleable.text_action, 0, 0);
         CharSequence name = a.getString(R.styleable.text_action_ta_text);
         Drawable drawableTop = a.getDrawable(R.styleable.text_action_ta_drawableTop);
-        mTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, drawableTop, null, null);
+        mTextView.setIcon(drawableTop);
+        //mTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, drawableTop, null, null);
         mTextView.setText(name);
     }
 
