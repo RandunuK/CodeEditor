@@ -123,6 +123,15 @@ class EditorTextActionModeStarter implements CodeEditor.EditorTextActionPresente
     }
 
     @Override
+    public void onTextSelectionOver(MotionEvent event) {
+        long packed = mEditor.getPointPositionOnScreen(event.getX(), event.getY());
+        int line = IntPair.getFirst(packed);
+        int column = IntPair.getSecond(packed);
+        mEditor.setSelection(line, column);
+        mEditor.hideAutoCompleteWindow();
+    }
+
+    @Override
     public void onExit() {
         if (mActionMode != null) {
             mActionMode.finish();

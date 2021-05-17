@@ -17,6 +17,8 @@ package io.github.rosemoe.editor.widget;
 
 import android.content.res.Resources;
 import android.graphics.RectF;
+import android.text.Selection;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -35,6 +37,7 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
 
     private final static int HIDE_DELAY = 3000;
     private final static int HIDE_DELAY_HANDLE = 5000;
+    private static final String TAG = "EditorTouchEventHandler";
     private final CodeEditor mEditor;
     private final OverScroller mScroller;
     protected boolean topOrBottom; //true for bottom
@@ -51,6 +54,7 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
     private float offsetX, offsetY;
     private SelectionHandle insert = null, left = null, right = null;
     private int type = -1;
+
 
     /**
      * Create a event handler for the given editor
@@ -85,9 +89,9 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
      * Handles the selected text click event
      */
     private void handleSelectedTextClick(MotionEvent e, int line, int column) {
-        if (mEditor.getTextActionPresenter() instanceof EditorTextActionWindowV1) {
+        if (mEditor.getTextActionPresenter() instanceof ModifiedTextActionWindow) {
             char text = mEditor.getText().charAt(line, column);
-            if (isWhitespace(text) || ((EditorTextActionWindowV1) mEditor.getTextActionPresenter()).isShowing())
+            if (isWhitespace(text) || ((ModifiedTextActionWindow) mEditor.getTextActionPresenter()).isShowing())
                 mEditor.setSelection(line, column);
             else mEditor.getTextActionPresenter().onSelectedTextClicked(e);
         } else {
@@ -148,7 +152,15 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
      * @return Whether to draw
      */
     public boolean shouldDrawInsertHandle() {
-        return System.currentTimeMillis() - mLastSetSelection < HIDE_DELAY || mHolding3;
+        return (System.currentTimeMillis() - mLastSetSelection < HIDE_DELAY || mHolding3) && checkActionWindow();
+    }
+
+    private boolean checkActionWindow() {
+        CodeEditor.EditorTextActionPresenter presenter = mEditor.mTextActionPresenter;
+        if (presenter instanceof EditorTextActionWindow) {
+            return !((EditorTextActionWindow) presenter).isShowing();
+        }
+        return true;
     }
 
     /**
@@ -373,8 +385,22 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
             handleSelectedTextClick(e, line, column);
         } else {
             notifyLater();
-            mEditor.setSelection(line, column);
-            mEditor.hideAutoCompleteWindow();
+            int oldLine = mEditor.getCursor().getLeftLine();
+            int oldColumn = mEditor.getCursor().getLeftColumn();
+            if (line == oldLine && column == oldColumn) {
+                if (mEditor.mTextActionPresenter instanceof ModifiedTextActionWindow) {
+                    ModifiedTextActionWindow window = (ModifiedTextActionWindow) mEditor.mTextActionPresenter;
+                    if (window.isShowing()) {
+                        window.hide();
+                    } else {
+                        window.onBeginTextSelect();
+                        window.onSelectedTextClicked(e);
+                    }
+                }
+            } else {
+                mEditor.setSelection(line, column);
+                mEditor.hideAutoCompleteWindow();
+            }
         }
         mEditor.performClick();
         return true;
@@ -382,6 +408,11 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
 
     @Override
     public void onLongPress(MotionEvent e) {
+        if (mEditor.mTextActionPresenter instanceof ModifiedTextActionWindow) {
+            handleLongPressForModifiedTextAction(e);
+            return;
+        }
+
         if (mEditor.getCursor().isSelected() || e.getPointerCount() != 1) {
             return;
         }
@@ -416,6 +447,38 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
             }
         }
         mEditor.setSelectionRegion(startLine, startColumn, endLine, endColumn);
+    }
+
+    private void handleLongPressForModifiedTextAction(MotionEvent e) {
+        if (mEditor.getCursor().isSelected() || e.getPointerCount() != 1) {
+            return;
+        }
+        long res = mEditor.getPointPositionOnScreen(e.getX(), e.getY());
+        int line = IntPair.getFirst(res);
+        int column = IntPair.getSecond(res);
+        //Find word edges
+        int startLine = line, endLine = line;
+        int startColumn = column;
+        while (startColumn > 0 && isIdentifierPart(mEditor.getText().charAt(line, startColumn - 1))) {
+            startColumn--;
+        }
+        int maxColumn = mEditor.getText().getColumnCount(line);
+        int endColumn = column;
+        while (endColumn < maxColumn && isIdentifierPart(mEditor.getText().charAt(line, endColumn))) {
+            endColumn++;
+        }
+        if (startLine == endLine && startColumn == endColumn) {
+            Log.d(TAG, "onLongPress: ");
+            ModifiedTextActionWindow window = (ModifiedTextActionWindow) mEditor.mTextActionPresenter;
+            if (window.isShowing()) {
+                window.hide();
+            } else {
+                window.onBeginTextSelect();
+                window.onSelectedTextClicked(e);
+            }
+        } else {
+            mEditor.setSelectionRegion(startLine, startColumn, endLine, endColumn);
+        }
     }
 
     @Override

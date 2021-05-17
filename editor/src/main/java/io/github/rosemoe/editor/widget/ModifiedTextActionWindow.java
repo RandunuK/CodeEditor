@@ -17,7 +17,6 @@ package io.github.rosemoe.editor.widget;
 
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.util.Log;
@@ -36,7 +35,7 @@ import io.github.rosemoe.editor.R;
  *
  * @author Rose
  */
-class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnClickListener, CodeEditor.EditorTextActionPresenter {
+class ModifiedTextActionWindow extends EditorBasePopupWindow implements View.OnClickListener, CodeEditor.EditorTextActionPresenter {
     private final CodeEditor mEditor;
     private final MaterialButton mPasteBtn;
     private final MaterialButton mSelectAll;
@@ -48,7 +47,7 @@ class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnC
      *
      * @param editor Target editor
      */
-    public EditorTextActionWindowV1(CodeEditor editor) {
+    public ModifiedTextActionWindow(CodeEditor editor) {
         super(editor);
         mEditor = editor;
         mDpUnit = mEditor.getDpUnit();
@@ -101,7 +100,7 @@ class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnC
 
     @Override
     public void onSelectedTextClicked(MotionEvent event) {
-        EditorTextActionWindowV1 panel = this;
+        ModifiedTextActionWindow panel = this;
         if (panel.isShowing()) {
             panel.hide();
         } else {
@@ -149,7 +148,62 @@ class EditorTextActionWindowV1 extends EditorBasePopupWindow implements View.OnC
             Log.d("onSelectedTextClicked", "panelX: " + panelX + ", panelY: " + panelY);
             panel.show();
             mContainer.requestFocus();
-            mSelectAll.clearFocus();
+            //mSelectAll.clearFocus();
+        }
+    }
+
+    @Override
+    public void onTextSelectionOver(MotionEvent event) {
+        Log.d("onTextSelectionOver", "onTextSelectionOver: ");
+        ModifiedTextActionWindow panel = this;
+        if (panel.isShowing()) {
+            panel.hide();
+        } else {
+            int first = mEditor.getFirstVisibleRow();
+            int last = mEditor.getLastVisibleRow();
+            int left = mEditor.getCursor().getLeftLine();
+            int right = mEditor.getCursor().getRightLine();
+            int toLineBottom;
+            if (right <= first) {
+                toLineBottom = first;
+            } else if (right > last) {
+                if (left <= first) {
+                    toLineBottom = (first + last) / 2;
+                } else if (left >= last) {
+                    toLineBottom = last - 2;
+                } else {
+                    if (left + 3 >= last) {
+                        toLineBottom = left - 2;
+                    } else {
+                        toLineBottom = left + 1;
+                    }
+                }
+            } else {
+                if (left <= first) {
+                    if (right + 3 >= last) {
+                        toLineBottom = right - 2;
+                    } else {
+                        toLineBottom = right + 1;
+                    }
+                } else {
+                    if (left + 5 >= right) {
+                        toLineBottom = right + 1;
+                    } else {
+                        toLineBottom = (left + right) / 2;
+                    }
+                }
+            }
+            toLineBottom = Math.max(0, toLineBottom);
+            int panelY = mEditor.getRowBottom(toLineBottom) - mEditor.getOffsetY();
+            float handleLeftX = mEditor.getOffset(left, mEditor.getCursor().getLeftColumn());
+            float handleRightX = mEditor.getOffset(right, mEditor.getCursor().getRightColumn());
+            int panelX = (int) ((handleLeftX + handleRightX) / 2f);
+            panel.setExtendedX(mDpUnit * 28);
+            panel.setExtendedY(panelY);
+            Log.d("onSelectedTextClicked", "panelX: " + panelX + ", panelY: " + panelY);
+            panel.show();
+            //mContainer.requestFocus();
+            //mSelectAll.clearFocus();
         }
     }
 

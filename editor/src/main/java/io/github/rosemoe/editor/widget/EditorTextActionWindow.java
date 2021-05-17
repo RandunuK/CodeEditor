@@ -135,6 +135,11 @@ class EditorTextActionWindow extends EditorBasePopupWindow implements View.OnCli
     }
 
     @Override
+    public void onTextSelectionOver(MotionEvent event) {
+
+    }
+
+    @Override
     public boolean shouldShowCursor() {
         return !isShowing();
     }

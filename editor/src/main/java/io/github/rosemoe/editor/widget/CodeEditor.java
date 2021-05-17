@@ -81,7 +81,7 @@ import io.github.rosemoe.editor.util.IntPair;
  * CodeEditor is a editor that can highlight text regions by doing basic syntax analyzing
  * This project in GitHub: https://github.com/Rosemoe/CodeEditor
  * <p>
- *  Note:
+ * Note:
  * Row and line are different in this editor
  * When we say 'row', it means a line displayed on screen. It can be a part of a line in the text object.
  * When we say 'line', it means a real line in the original text.
@@ -202,7 +202,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private EditorTouchEventHandler mEventHandler;
     private Paint.Align mLineNumberAlign;
     private GestureDetector mBasicDetector;
-    private EditorTextActionPresenter mTextActionPresenter;
+    protected EditorTextActionPresenter mTextActionPresenter;
     private ScaleGestureDetector mScaleDetector;
     private EditorInputConnection mConnection;
     private CursorAnchorInfo.Builder mAnchorInfoBuilder;
@@ -729,7 +729,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         if (mode == TextActionMode.ACTION_MODE) {
             mTextActionPresenter = new EditorTextActionModeStarter(this);
         } else {
-            mTextActionPresenter = new EditorTextActionWindowV1(this);
+            mTextActionPresenter = new ModifiedTextActionWindow(this);
         }
     }
 
@@ -4008,6 +4008,8 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
          * @param event Event
          */
         void onSelectedTextClicked(MotionEvent event);
+
+        void onTextSelectionOver(MotionEvent event);
 
         /**
          * Notify that the position of panel should be updated.
