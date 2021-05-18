@@ -109,7 +109,7 @@ class EditorTextActionModeStarter implements CodeEditor.EditorTextActionPresente
     }
 
     @Override
-    public void onUpdate() {
+    public void onUpdate(int i) {
 
     }
 
@@ -123,7 +123,7 @@ class EditorTextActionModeStarter implements CodeEditor.EditorTextActionPresente
     }
 
     @Override
-    public void onTextSelectionOver(MotionEvent event) {
+    public void onEndTextSelect(MotionEvent event) {
         long packed = mEditor.getPointPositionOnScreen(event.getX(), event.getY());
         int line = IntPair.getFirst(packed);
         int column = IntPair.getSecond(packed);

@@ -35,12 +35,13 @@ import io.github.rosemoe.editor.R;
  *
  * @author Rose
  */
-class ModifiedTextActionWindow extends EditorBasePopupWindow implements View.OnClickListener, CodeEditor.EditorTextActionPresenter {
+class ModifiedTextActionWindow extends EditorTextActionBasePopupWindow implements View.OnClickListener, CodeEditor.EditorTextActionPresenter {
     private final CodeEditor mEditor;
     private final MaterialButton mPasteBtn;
     private final MaterialButton mSelectAll;
     private final LinearLayout mContainer;
     private float mDpUnit = 0f;
+    private int popupHeightInDp = 60;
 
     /**
      * Create a panel for the given editor
@@ -51,6 +52,7 @@ class ModifiedTextActionWindow extends EditorBasePopupWindow implements View.OnC
         super(editor);
         mEditor = editor;
         mDpUnit = mEditor.getDpUnit();
+        popHeightPx = (int) (popupHeightInDp * mDpUnit);
         // Since popup window does provide decor view, we have to pass null to this method
         @SuppressLint("InflateParams")
         View root = LayoutInflater.from(editor.getContext()).inflate(R.layout.text_compose_panel_v1, null);
@@ -83,26 +85,81 @@ class ModifiedTextActionWindow extends EditorBasePopupWindow implements View.OnC
     public void onBeginTextSelect() {
         setHeight((int) (LinearLayout.LayoutParams.WRAP_CONTENT));
         setWidth((int) (LinearLayout.LayoutParams.WRAP_CONTENT));
-        //setHeight((int) (mDpUnit * 60));
-        //setWidth((int) (mDpUnit * 300));
-        //onSelectedTextClicked(null);
+//        ModifiedTextActionWindow panel = this;
+//        panel.show();
     }
 
     @Override
     public void onExit() {
-        hide();
+        hide(HIDE_BY_DISMISS);
     }
 
     @Override
-    public void onUpdate() {
-        hide();
+    public void onUpdate(int hideType) {
+        hide(hideType);
     }
 
     @Override
     public void onSelectedTextClicked(MotionEvent event) {
         ModifiedTextActionWindow panel = this;
         if (panel.isShowing()) {
-            panel.hide();
+            panel.hide(HIDE_BY_DISMISS);
+        } else {
+            int first = mEditor.getFirstVisibleRow();
+            int last = mEditor.getLastVisibleRow();
+            int left = mEditor.getCursor().getLeftLine();
+            int right = mEditor.getCursor().getRightLine();
+            int toLineBottom;
+            if (right <= first) {
+                toLineBottom = first;
+            } else if (right > last) {
+                if (left <= first) {
+                    toLineBottom = (first + last) / 2;
+                } else if (left >= last) {
+                    toLineBottom = last - 2;
+                } else {
+                    if (left + 3 >= last) {
+                        toLineBottom = left - 2;
+                    } else {
+                        toLineBottom = left + 1;
+                    }
+                }
+            } else {
+                if (left <= first) {
+                    if (right + 3 >= last) {
+                        toLineBottom = right - 2;
+                    } else {
+                        toLineBottom = right + 1;
+                    }
+                } else {
+                    if (left + 5 >= right) {
+                        toLineBottom = right + 1;
+                    } else {
+                        toLineBottom = (left + right) / 2;
+                    }
+                }
+            }
+            toLineBottom = Math.max(0, toLineBottom);
+            int panelY = mEditor.getRowBottom(toLineBottom) - mEditor.getOffsetY();
+            float handleLeftX = mEditor.getOffset(left, mEditor.getCursor().getLeftColumn());
+            float handleRightX = mEditor.getOffset(right, mEditor.getCursor().getRightColumn());
+            int panelX = (int) ((handleLeftX + handleRightX) / 2f);
+            panel.setExtendedX(mDpUnit * 28);
+            panel.setExtendedY(panelY);
+            Log.d("onSelectedTextClicked", "panelX: " + panelX + ", panelY: " + panelY);
+            panel.show();
+            //mEditor.createRandom();
+            mContainer.requestFocus();
+            //mSelectAll.clearFocus();
+        }
+    }
+
+    @Override
+    public void onEndTextSelect(MotionEvent event) {
+        Log.d("onTextSelectionOver", "onTextSelectionOver: ");
+        ModifiedTextActionWindow panel = this;
+        if (panel.isShowing()) {
+            panel.hide(HIDE_BY_DISMISS);
         } else {
             int first = mEditor.getFirstVisibleRow();
             int last = mEditor.getLastVisibleRow();
@@ -152,65 +209,10 @@ class ModifiedTextActionWindow extends EditorBasePopupWindow implements View.OnC
         }
     }
 
-    @Override
-    public void onTextSelectionOver(MotionEvent event) {
-        Log.d("onTextSelectionOver", "onTextSelectionOver: ");
-        ModifiedTextActionWindow panel = this;
-        if (panel.isShowing()) {
-            panel.hide();
-        } else {
-            int first = mEditor.getFirstVisibleRow();
-            int last = mEditor.getLastVisibleRow();
-            int left = mEditor.getCursor().getLeftLine();
-            int right = mEditor.getCursor().getRightLine();
-            int toLineBottom;
-            if (right <= first) {
-                toLineBottom = first;
-            } else if (right > last) {
-                if (left <= first) {
-                    toLineBottom = (first + last) / 2;
-                } else if (left >= last) {
-                    toLineBottom = last - 2;
-                } else {
-                    if (left + 3 >= last) {
-                        toLineBottom = left - 2;
-                    } else {
-                        toLineBottom = left + 1;
-                    }
-                }
-            } else {
-                if (left <= first) {
-                    if (right + 3 >= last) {
-                        toLineBottom = right - 2;
-                    } else {
-                        toLineBottom = right + 1;
-                    }
-                } else {
-                    if (left + 5 >= right) {
-                        toLineBottom = right + 1;
-                    } else {
-                        toLineBottom = (left + right) / 2;
-                    }
-                }
-            }
-            toLineBottom = Math.max(0, toLineBottom);
-            int panelY = mEditor.getRowBottom(toLineBottom) - mEditor.getOffsetY();
-            float handleLeftX = mEditor.getOffset(left, mEditor.getCursor().getLeftColumn());
-            float handleRightX = mEditor.getOffset(right, mEditor.getCursor().getRightColumn());
-            int panelX = (int) ((handleLeftX + handleRightX) / 2f);
-            panel.setExtendedX(mDpUnit * 28);
-            panel.setExtendedY(panelY);
-            Log.d("onSelectedTextClicked", "panelX: " + panelX + ", panelY: " + panelY);
-            panel.show();
-            //mContainer.requestFocus();
-            //mSelectAll.clearFocus();
-        }
-    }
-
 
     @Override
     public boolean shouldShowCursor() {
-        return !isShowing();
+        return true;
     }
 
     /**
@@ -246,7 +248,7 @@ class ModifiedTextActionWindow extends EditorBasePopupWindow implements View.OnC
             mEditor.copyText();
             mEditor.setSelection(mEditor.getCursor().getRightLine(), mEditor.getCursor().getRightColumn());
         }
-        hide();
+        hide(HIDE_BY_DISMISS);
     }
 
 }

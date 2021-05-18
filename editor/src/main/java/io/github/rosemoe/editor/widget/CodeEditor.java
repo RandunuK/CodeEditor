@@ -35,7 +35,9 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -50,6 +52,7 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.OverScroller;
+import android.widget.PopupWindow;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -731,6 +734,15 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         } else {
             mTextActionPresenter = new ModifiedTextActionWindow(this);
         }
+
+    }
+
+    public void createRandom() {
+        View root = LayoutInflater.from(getContext()).inflate(R.layout.text_compose_panel_v1, null);
+        PopupWindow popUp = new PopupWindow(this);
+        popUp.setContentView(root);
+        popUp.showAtLocation(this, Gravity.BOTTOM, 10, 10);
+        popUp.update(250, 500, 300, 100);
     }
 
     /**
@@ -3227,7 +3239,9 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         if (!lastState && mCursor.isSelected() && mStartedActionMode != ACTION_MODE_SEARCH_TEXT) {
             mTextActionPresenter.onBeginTextSelect();
         }
+        mEventHandler.notifyTextSelectionEnd();
     }
+
 
     /**
      * Move to next page
@@ -3460,6 +3474,9 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         return mCursorPosition;
     }
 
+    public EditorTouchEventHandler getEventHandler() {
+        return mEventHandler;
+    }
 
     //------------------------Internal Callbacks------------------------------
 
@@ -4009,14 +4026,14 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
          */
         void onSelectedTextClicked(MotionEvent event);
 
-        void onTextSelectionOver(MotionEvent event);
+        void onEndTextSelect(MotionEvent event);
 
         /**
          * Notify that the position of panel should be updated.
          * If the presenter is displayed in editor's viewport, it should update
          * its position
          */
-        void onUpdate();
+        void onUpdate(int hideType);
 
         /**
          * Start the presenter

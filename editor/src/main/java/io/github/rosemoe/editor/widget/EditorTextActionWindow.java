@@ -79,7 +79,7 @@ class EditorTextActionWindow extends EditorBasePopupWindow implements View.OnCli
     }
 
     @Override
-    public void onUpdate() {
+    public void onUpdate(int h) {
         hide();
     }
 
@@ -135,7 +135,7 @@ class EditorTextActionWindow extends EditorBasePopupWindow implements View.OnCli
     }
 
     @Override
-    public void onTextSelectionOver(MotionEvent event) {
+    public void onEndTextSelect(MotionEvent event) {
 
     }
 
