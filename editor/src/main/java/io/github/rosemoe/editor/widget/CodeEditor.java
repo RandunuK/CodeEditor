@@ -53,6 +53,10 @@ import android.widget.OverScroller;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.Px;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,6 +80,7 @@ import io.github.rosemoe.editor.text.SpanMapUpdater;
 import io.github.rosemoe.editor.text.TextAnalyzeResult;
 import io.github.rosemoe.editor.text.TextAnalyzer;
 import io.github.rosemoe.editor.util.IntPair;
+import io.github.rosemoe.editor.util.LongArrayList;
 
 /**
  * CodeEditor is a editor that can highlight text regions by doing basic syntax analyzing
@@ -86,18 +91,21 @@ import io.github.rosemoe.editor.util.IntPair;
  * When we say 'row', it means a line displayed on screen. It can be a part of a line in the text object.
  * When we say 'line', it means a real line in the original text.
  *
- * @author Rose
+ * @author Rosemoe
  */
 public class CodeEditor extends View implements ContentListener, TextAnalyzer.Callback, FormatThread.FormatResultReceiver, LineRemoveListener {
 
     /**
      * The default size when creating the editor object. Unit is sp.
      */
+
     public static final int DEFAULT_TEXT_SIZE = 16;
+
     /**
      * The default cursor blinking period
      */
     public static final int DEFAULT_CURSOR_BLINK_PERIOD = 500;
+
     /**
      * Draw whitespace characters before line content start
      * <strong>Whitespace here only means space and tab</strong>
@@ -105,6 +113,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @see #setNonPrintablePaintingFlags(int)
      */
     public static final int FLAG_DRAW_WHITESPACE_LEADING = 1;
+
     /**
      * Draw whitespace characters inside line content
      * <strong>Whitespace here only means space and tab</strong>
@@ -112,6 +121,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @see #setNonPrintablePaintingFlags(int)
      */
     public static final int FLAG_DRAW_WHITESPACE_INNER = 1 << 1;
+
     /**
      * Draw whitespace characters after line content end
      * <strong>Whitespace here only means space and tab</strong>
@@ -119,6 +129,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @see #setNonPrintablePaintingFlags(int)
      */
     public static final int FLAG_DRAW_WHITESPACE_TRAILING = 1 << 2;
+
     /**
      * Draw whitespace characters even if it is a line full of whitespaces
      * To apply this, you must enable {@link #FLAG_DRAW_WHITESPACE_LEADING}
@@ -127,6 +138,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @see #setNonPrintablePaintingFlags(int)
      */
     public static final int FLAG_DRAW_WHITESPACE_FOR_EMPTY_LINE = 1 << 3;
+
     /**
      * Draw newline signals in text
      *
@@ -134,6 +146,9 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      */
     public static final int FLAG_DRAW_LINE_SEPARATOR = 1 << 4;
 
+    /**
+     * Text size scale of small graph
+     */
     private static final float SCALE_MINI_GRAPH = 0.9f;
 
     /*
@@ -161,6 +176,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private boolean mDrag;
     private boolean mScalable;
     private boolean mEditable;
+    private boolean mCharPaint;
     private boolean mAutoIndentEnabled;
     private boolean mWordwrap;
     private boolean mShowBlockLine;
@@ -168,6 +184,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private boolean mDisplayLnPanel;
     private boolean mOverScrollEnabled;
     private boolean mLineNumberEnabled;
+    private boolean mBlockLineEnabled;
     private boolean mAutoCompletionEnabled;
     private boolean mCompletionOnComposing;
     private boolean mHighlightSelectedText;
@@ -202,9 +219,9 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private EditorTouchEventHandler mEventHandler;
     private Paint.Align mLineNumberAlign;
     private GestureDetector mBasicDetector;
-    private EditorTextActionPresenter mTextActionPresenter;
+    protected EditorTextActionPresenter mTextActionPresenter;
     private ScaleGestureDetector mScaleDetector;
-    private EditorInputConnection mConnection;
+    EditorInputConnection mConnection;
     private CursorAnchorInfo.Builder mAnchorInfoBuilder;
     private MaterialEdgeEffect mVerticalEdgeGlow;
     private MaterialEdgeEffect mHorizontalGlow;
@@ -218,7 +235,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private Paint.FontMetricsInt mGraphMetrics;
     private CursorBlink mCursorBlink;
     private SymbolPairMatch mOverrideSymbolPairs;
-    private Context mContext;
+    private LongArrayList mPostDrawLineNumbers = new LongArrayList();
 
     public CodeEditor(Context context) {
         this(context, null);
@@ -234,7 +251,6 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
 
     public CodeEditor(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        mContext = context;
         initialize();
     }
 
@@ -266,7 +282,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      *
      * @see EditorEventListener
      */
-    public void setEventListener(EditorEventListener eventListener) {
+    public void setEventListener(@Nullable EditorEventListener eventListener) {
         this.mListener = eventListener;
     }
 
@@ -292,6 +308,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     /**
      * Get using EditorAutoCompleteWindow
      */
+    @NonNull
     protected EditorAutoCompleteWindow getAutoCompleteWindow() {
         return mCompletionWindow;
     }
@@ -301,6 +318,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      *
      * @return EditorTextActionPresenter
      */
+    @NonNull
     protected EditorTextActionPresenter getTextActionPresenter() {
         return mTextActionPresenter;
     }
@@ -335,14 +353,14 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     /**
      * Set request needed to update when editor updates selection
      */
-    protected void setExtracting(ExtractedTextRequest request) {
+    protected void setExtracting(@Nullable ExtractedTextRequest request) {
         mExtracting = request;
     }
 
     /**
      * Extract text in editor for input method
      */
-    protected ExtractedText extractText(ExtractedTextRequest request) {
+    protected ExtractedText extractText(@NonNull ExtractedTextRequest request) {
         Cursor cur = getCursor();
         ExtractedText text = new ExtractedText();
         int selBegin = cur.getLeft();
@@ -371,11 +389,18 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     /**
      * Notify input method that text has been changed for external reason
      */
-    protected void cursorChangeExternal() {
+    protected void notifyExternalCursorChange() {
         //Logs.log("Call cursorChangeExternal()");
         updateExtractedText();
         updateSelection();
         updateCursorAnchor();
+        // Restart if composing
+        if (mConnection.mComposingLine != -1) {
+            restartInput();
+        }
+    }
+
+    protected void restartInput() {
         mConnection.invalid();
         mInputMethodManager.restartInput(this);
     }
@@ -446,7 +471,6 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         mPaint.setAntiAlias(true);
         mPaintOther.setAntiAlias(true);
         mPaintGraph.setAntiAlias(true);
-
         mPaintOther.setTypeface(Typeface.MONOSPACE);
         mBuffer = new char[256];
         mBuffer2 = new char[16];
@@ -473,7 +497,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         mLineNumberAlign = Paint.Align.RIGHT;
         mDrag = false;
         mWait = false;
-        mShowBlockLine = false;
+        mBlockLineEnabled = true;
         mBlockLineWidth = mDpUnit / 1.5f;
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         mClipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
@@ -504,6 +528,8 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         setEditable(true);
         setLineNumberEnabled(true);
         setAutoCompletionOnComposing(false);
+        setTypefaceText(Typeface.DEFAULT);
+      
         // Issue #41 View being highlighted when focused on Android 11
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             setDefaultFocusHighlightEnabled(false);
@@ -516,6 +542,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * <p>
      * Use {@link SymbolPairMatch.Replacement#NO_REPLACEMENT} to force no completion for a character
      */
+    @NonNull
     public SymbolPairMatch getOverrideSymbolPairs() {
         return mOverrideSymbolPairs;
     }
@@ -535,12 +562,19 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     }
 
     /**
+     * Create a channel to insert symbols
+     */
+    public SymbolChannel createNewSymbolChannel() {
+        return new SymbolChannel(this);
+    }
+
+    /**
      * Set adapter for auto-completion window
      * Will take effect next time the window updates
      *
      * @param adapter New adapter, maybe null
      */
-    public void setAutoCompletionIemAdapter(EditorCompletionAdapter adapter) {
+    public void setAutoCompletionItemAdapter(@Nullable EditorCompletionAdapter adapter) {
         mCompletionWindow.setAdapter(adapter);
     }
 
@@ -611,7 +645,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      *
      * @param lang New EditorLanguage for editor
      */
-    public void setEditorLanguage(EditorLanguage lang) {
+    public void setEditorLanguage(@Nullable EditorLanguage lang) {
         if (lang == null) {
             lang = new EmptyLanguage();
         }
@@ -827,6 +861,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @see CodeEditor#setTextSize(float)
      * @see CodeEditor#setTextSizePx(float)
      */
+    @Px
     public float getTextSizePx() {
         return mPaint.getTextSize();
     }
@@ -836,7 +871,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      *
      * @param size Text size in pixel unit
      */
-    public void setTextSizePx(float size) {
+    public void setTextSizePx(@Px float size) {
         setTextSizePxDirect(size);
         createLayout();
         invalidate();
@@ -863,8 +898,12 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         startClock = System.nanoTime();
     }
 
-    private void print(String processName) {
-        Log.d(LOG_TAG, "- Process " + processName + " used " + (System.nanoTime() - startClock) / 1e6 + " ms");
+
+    private void print() {
+        double time = (System.nanoTime() - startClock) / 1e6;
+        if (time > 3.0) {
+            Log.d(LOG_TAG, "Fatal: drawView() used " + time + " ms");
+        }
     }
 
     /**
@@ -873,7 +912,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @param canvas Canvas you want to draw
      */
     private void drawView(Canvas canvas) {
-        //long startTime = System.currentTimeMillis();
+        //record();
         //counter = 0;
         mSpanner.notifyRecycle();
         if (mFormatThread != null) {
@@ -917,28 +956,29 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             mRightHandle.setEmpty();
         }
 
-        List<Long> postDrawLineNumbers = new ArrayList<>();
+        LongArrayList postDrawLineNumbers = mPostDrawLineNumbers;
+        postDrawLineNumbers.clear();
         List<CursorPaintAction> postDrawCursor = new ArrayList<>();
 
-        //record();
         drawRows(canvas, textOffset, postDrawLineNumbers, postDrawCursor);
-        //print("rows");
 
         offsetX = -getOffsetX();
 
-        //record();
         if (isLineNumberEnabled()) {
             int zeroOffsetX = 0;
             drawLineNumberBackground(canvas, zeroOffsetX, lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_NUMBER_BACKGROUND));
             drawDivider(canvas, zeroOffsetX + lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_DIVIDER));
             int lineNumberColor = mColors.getColor(EditorColorScheme.LINE_NUMBER);
-            for (long packed : postDrawLineNumbers) {
-                drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), zeroOffsetX, lineNumberWidth, lineNumberColor);
+           
+            for (int i = 0;i < postDrawLineNumbers.size();i++) {
+                long packed = postDrawLineNumbers.get(i);
+                drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), offsetX, lineNumberWidth, lineNumberColor);
+
             }
         }
-        //print("ln");
 
-        if (!isWordwrap() && mShowBlockLine) {
+        if (!isWordwrap() && isBlockLineEnabled()) {
+
             drawBlockLines(canvas, textOffset);
         }
 
@@ -948,11 +988,8 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
 
         drawScrollBars(canvas);
         drawEdgeEffect(canvas);
-
-        //long timeUsage = System.currentTimeMillis() - startTime;
-        //Log.d(LOG_TAG, "count = " + counter);
-        //Log.d(LOG_TAG, "Draw view cost time:" + timeUsage + "ms");
-
+        //print();
+        //Log.d(LOG_TAG, "drawText() calls count = " + counter);
     }
 
     /**
@@ -982,7 +1019,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @param postDrawLineNumbers Line numbers to be drawn later
      * @param postDrawCursor      Cursors to be drawn later
      */
-    private void drawRows(Canvas canvas, float offset, List<Long> postDrawLineNumbers, List<CursorPaintAction> postDrawCursor) {
+    private void drawRows(Canvas canvas, float offset, LongArrayList postDrawLineNumbers, List<CursorPaintAction> postDrawCursor) {
         RowIterator rowIterator = mLayout.obtainRowIterator(getFirstVisibleRow());
         List<Span> temporaryEmptySpans = null;
         List<List<Span>> spanMap = mSpanner.getResult().getSpanMap();
@@ -1152,8 +1189,8 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
                 int paintStart = Math.min(Math.max(composingStart, firstVisibleChar), lastVisibleChar);
                 int paintEnd = Math.min(Math.max(composingEnd, firstVisibleChar), lastVisibleChar);
                 if (paintStart != paintEnd) {
-                    mRect.bottom = getRowBottom(row) - getOffsetY();
-                    mRect.top = mRect.bottom + getRowHeight() * 0.06f;
+                    mRect.top = getRowBottom(row) - getOffsetY();
+                    mRect.bottom = mRect.top + getRowHeight() * 0.06f;
                     mRect.left = paintingOffset + measureText(mBuffer, firstVisibleChar, paintStart - firstVisibleChar);
                     mRect.right = mRect.left + measureText(mBuffer, paintStart, paintEnd - paintStart);
                     drawColor(canvas, mColors.getColor(EditorColorScheme.UNDERLINE), mRect);
@@ -1447,7 +1484,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @param resultRect The rect of handle this method drew
      */
     private void drawHandle(Canvas canvas, int row, float centerX, RectF resultRect) {
-        float radius = mDpUnit * 10;
+        float radius = mDpUnit * 12;
         float top = getRowBottom(row) - getOffsetY();
         float bottom = top + radius * 2;
         float left = centerX - radius;
@@ -1828,6 +1865,8 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         return mFontCache.measureText(text, index, index + count, mPaint) + tabCount * extraWidth;
     }
 
+    //private int counter;
+
     /**
      * Draw text on the given position
      *
@@ -1842,11 +1881,25 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         //counter++;
         int end = index + count;
         int st = index;
-        for (int i = index; i < end; i++) {
-            if (src[i] == '\t') {
-                canvas.drawText(src, st, i - st, offX, offY, mPaint);
-                offX = offX + measureText(src, st, i - st + 1);
-                st = i + 1;
+        if (mCharPaint) {
+            for (int i = index; i < end; i++) {
+                if (src[i] == '\t') {
+                    canvas.drawText(src, st, i - st, offX, offY, mPaint);
+                    offX = offX + measureText(src, st, i - st + 1);
+                    st = i + 1;
+                } else if (src[i] == '/') {
+                    canvas.drawText(src, st, i - st + 1, offX, offY, mPaint);
+                    offX = offX + measureText(src, st, i - st + 1);
+                    st = i + 1;
+                }
+            }
+        } else {
+            for (int i = index; i < end; i++) {
+                if (src[i] == '\t') {
+                    canvas.drawText(src, st, i - st, offX, offY, mPaint);
+                    offX = offX + measureText(src, st, i - st + 1);
+                    st = i + 1;
+                }
             }
         }
         if (st < end) {
@@ -2225,7 +2278,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     }
 
     /**
-     * Set non-printable painting flags.
+     * Sets non-printable painting flags.
      * Specify where they should be drawn.
      * <p>
      * Flags can be mixed.
@@ -2783,6 +2836,12 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         }
         mPaint.setTypeface(typefaceText);
         mFontCache.clearCache();
+        if (2 * mPaint.measureText("/") != mPaint.measureText("//")) {
+            Log.w(LOG_TAG, "Font issue:Your font is painting '/' and '//' differently, which will cause the editor to render slowly than other fonts.");
+            mCharPaint = true;
+        } else {
+            mCharPaint = false;
+        }
         mTextMetrics = mPaint.getFontMetricsInt();
         createLayout();
         invalidate();
@@ -2995,6 +3054,15 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         return mScalable;
     }
 
+    public void setBlockLineEnabled(boolean enabled) {
+        mBlockLineEnabled = enabled;
+        invalidate();
+    }
+
+    public boolean isBlockLineEnabled() {
+        return mBlockLineEnabled;
+    }
+
     /**
      * Move the selection down
      * If the auto complete panel is shown,move the selection in panel to next
@@ -3137,6 +3205,17 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @param column The column to move
      */
     public void setSelection(int line, int column) {
+        setSelection(line, column, true);
+    }
+
+    /**
+     * Move selection to given position
+     *
+     * @param line          The line to move
+     * @param column        The column to move
+     * @param makeItVisible Make the character visible
+     */
+    public void setSelection(int line, int column, boolean makeItVisible) {
         if (column > 0 && isEmoji(mText.charAt(line, column - 1))) {
             column++;
             if (column > mText.getColumnCount(line)) {
@@ -3148,7 +3227,11 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             mCursorPosition = findCursorBlock();
         }
         updateCursor();
-        ensurePositionVisible(line, column);
+        if (makeItVisible) {
+            ensurePositionVisible(line, column);
+        } else {
+            invalidate();
+        }
         mCursorBlink.onSelectionChanged();
         if (mTextActionPresenter != null) {
             mTextActionPresenter.onExit();
@@ -3258,7 +3341,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             if (text != null && mConnection != null) {
                 mConnection.commitText(text, 0);
             }
-            cursorChangeExternal();
+            notifyExternalCursorChange();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getContext(), e.toString(), Toast.LENGTH_SHORT).show();
@@ -3290,7 +3373,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         copyText();
         if (mCursor.isSelected()) {
             mCursor.onDeleteKeyPressed();
-            cursorChangeExternal();
+            notifyExternalCursorChange();
         }
     }
 
@@ -3298,16 +3381,17 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * @return Text displaying, the result is read-only. You should not make changes to this object as it is used internally
      * @see CodeEditor#setText(CharSequence)
      */
+    @NonNull
     public Content getText() {
         return mText;
     }
 
     /**
-     * Set the editor's text displaying
+     * Sets the text to be displayed.
      *
      * @param text the new text you want to display
      */
-    public void setText(CharSequence text) {
+    public void setText(@Nullable CharSequence text) {
         if (text == null) {
             text = "";
         }
@@ -3394,6 +3478,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      *
      * @return The paint which is used by the editor now
      */
+    @NonNull
     public Paint getTextPaint() {
         return mPaint;
     }
@@ -3404,19 +3489,21 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      *
      * @return ColorScheme object using
      */
+    @NonNull
     public EditorColorScheme getColorScheme() {
         return mColors;
     }
 
     /**
-     * Set a new color scheme for.editor
-     * It can be a subclass of {@link EditorColorScheme}
-     * The scheme object can only be applied to one editor.
-     * Otherwise, an IllegalStateException is thrown
+     * Set a new color scheme for editor.
+     * <p>
+     * It can be a subclass of {@link EditorColorScheme}.
+     * The scheme object can only be applied to one editor instance.
+     * Otherwise, an IllegalStateException is thrown.
      *
      * @param colors A non-null and free EditorColorScheme
      */
-    public void setColorScheme(EditorColorScheme colors) {
+    public void setColorScheme(@NonNull EditorColorScheme colors) {
         colors.attachEditor(this);
         mColors = colors;
         if (mCompletionWindow != null) {
@@ -3438,6 +3525,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      * Get analyze result.
      * <strong>Do not make changes to it or read concurrently</strong>
      */
+    @NonNull
     public TextAnalyzeResult getTextAnalyzeResult() {
         return mSpanner.getResult();
     }
@@ -3595,13 +3683,13 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             case KeyEvent.KEYCODE_DEL:
                 if (isEditable()) {
                     mCursor.onDeleteKeyPressed();
-                    //cursorChangeExternal();
+                    notifyExternalCursorChange();
                 }
                 return true;
             case KeyEvent.KEYCODE_FORWARD_DEL: {
-                if (isEditable() && mConnection != null) {
+                if (isEditable()) {
                     mConnection.deleteSurroundingText(0, 1);
-                    cursorChangeExternal();
+                    notifyExternalCursorChange();
                 }
                 return true;
             }
@@ -3648,7 +3736,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
                             mCursor.onCommitText("\n", true);
                         }
                     }
-                    //cursorChangeExternal();
+                    notifyExternalCursorChange();
                 }
                 return true;
             }
@@ -3692,7 +3780,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             case KeyEvent.KEYCODE_SPACE:
                 if (isEditable()) {
                     getCursor().onCommitText(" ");
-                    cursorChangeExternal();
+                    notifyExternalCursorChange();
                 }
                 return true;
             default:
@@ -3736,7 +3824,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
                         }
                         if (replacement == null || replacement == SymbolPairMatch.Replacement.NO_REPLACEMENT) {
                             getCursor().onCommitText(text);
-                            cursorChangeExternal();
+                            notifyExternalCursorChange();
                         } else {
                             getCursor().onCommitText(replacement.text);
                             int delta = (replacement.text.length() - replacement.selection);
@@ -3744,7 +3832,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
                                 int newSel = Math.max(getCursor().getLeft() - delta, 0);
                                 CharPosition charPosition = getCursor().getIndexer().getCharPosition(newSel);
                                 setSelection(charPosition.line, charPosition.column);
-                                cursorChangeExternal();
+                                notifyExternalCursorChange();
                             }
                         }
                     } else {
@@ -3799,7 +3887,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         if (isWordwrap() && w != oldWidth) {
             createLayout();
         } else {
-            mEventHandler.smoothScrollBy(getOffsetX() > getScrollMaxX() ? getScrollMaxX() - getOffsetX() : 0, getOffsetY() > getScrollMaxY() ? getScrollMaxY() - getOffsetY() : 0);
+            mEventHandler.scrollBy(getOffsetX() > getScrollMaxX() ? getScrollMaxX() - getOffsetX() : 0, getOffsetY() > getScrollMaxY() ? getScrollMaxY() - getOffsetY() : 0);
         }
     }
 

@@ -15,12 +15,12 @@
  */
 package io.github.rosemoe.editor.langs.java;
 
-import io.github.rosemoe.editor.interfaces.NewlineHandler;
-import io.github.rosemoe.editor.langs.internal.MyCharacter;
 import io.github.rosemoe.editor.interfaces.AutoCompleteProvider;
 import io.github.rosemoe.editor.interfaces.CodeAnalyzer;
 import io.github.rosemoe.editor.interfaces.EditorLanguage;
+import io.github.rosemoe.editor.interfaces.NewlineHandler;
 import io.github.rosemoe.editor.langs.IdentifierAutoComplete;
+import io.github.rosemoe.editor.langs.internal.MyCharacter;
 import io.github.rosemoe.editor.text.TextUtils;
 import io.github.rosemoe.editor.widget.SymbolPairMatch;
 
@@ -59,9 +59,9 @@ public class JavaLanguage implements EditorLanguage {
                 case LBRACE:
                     advance++;
                     break;
-                case RBRACE:
+                /*case RBRACE:
                     advance--;
-                    break;
+                    break;*/
             }
         }
         advance = Math.max(0, advance);
@@ -74,9 +74,15 @@ public class JavaLanguage implements EditorLanguage {
     }
 
     @Override
+    public SymbolPairMatch getSymbolPairs() {
+        return new SymbolPairMatch.DefaultSymbolPairs();
+    }
+
+    @Override
     public CharSequence format(CharSequence text) {
         return text;
     }
+
 
     @Override
     public SymbolPairMatch getSymbolPairs() {
@@ -84,6 +90,7 @@ public class JavaLanguage implements EditorLanguage {
     }
 
     private NewlineHandler[] newlineHandlers = new NewlineHandler[] { new BraceHandler() };
+
 
     @Override
     public NewlineHandler[] getNewlineHandlers() {
