@@ -82,7 +82,6 @@ final class EditorTouchEventHandler implements GestureDetector.OnGestureListener
     }
 
     /**
-     *
      * Checks whether the provided character is a whitespace
      *
      * @param c the char to check

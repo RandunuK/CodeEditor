@@ -529,6 +529,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         setLineNumberEnabled(true);
         setAutoCompletionOnComposing(false);
         setTypefaceText(Typeface.DEFAULT);
+
         // Issue #41 View being highlighted when focused on Android 11
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             setDefaultFocusHighlightEnabled(false);
@@ -968,7 +969,6 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             drawLineNumberBackground(canvas, zeroOffsetX, lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_NUMBER_BACKGROUND));
             drawDivider(canvas, zeroOffsetX + lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_DIVIDER));
             int lineNumberColor = mColors.getColor(EditorColorScheme.LINE_NUMBER);
-
             for (int i = 0; i < postDrawLineNumbers.size(); i++) {
                 long packed = postDrawLineNumbers.get(i);
                 drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), offsetX, lineNumberWidth, lineNumberColor);
@@ -2657,7 +2657,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
 
     /**
      * Whether over scroll is permitted.
-     * When over scroll is enabled, the user will be able to scroll out of displaying
+     * When over scroll is enabled, the user will be able to scroll ou47434c6ccbed43255cf0663449a1e78b2c90c9e6t of displaying
      * bounds if the user scroll fast enough.
      * This is implemented by {@link OverScroller#fling(int, int, int, int, int, int, int, int, int, int)}
      */

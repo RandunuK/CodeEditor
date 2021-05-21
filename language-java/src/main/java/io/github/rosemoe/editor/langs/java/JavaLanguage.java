@@ -85,6 +85,7 @@ public class JavaLanguage implements EditorLanguage {
 
     private NewlineHandler[] newlineHandlers = new NewlineHandler[]{new BraceHandler()};
 
+
     @Override
     public NewlineHandler[] getNewlineHandlers() {
         return newlineHandlers;
