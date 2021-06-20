@@ -15,11 +15,12 @@
  */
 package io.github.rosemoe.editor.widget;
 
-import android.text.Editable;
+import android.os.SystemClock;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.ExtractedText;
@@ -37,6 +38,7 @@ import io.github.rosemoe.editor.text.Cursor;
 class EditorInputConnection extends BaseInputConnection {
 
     private final static String LOG_TAG = "EditorInputConnection";
+    final static int TEXT_LENGTH_LIMIT = 1000000;
 
     private final CodeEditor mEditor;
     protected int mComposingLine = -1;
@@ -80,13 +82,6 @@ class EditorInputConnection extends BaseInputConnection {
      */
     private Cursor getCursor() {
         return mEditor.getCursor();
-    }
-
-    @Override
-    public Editable getEditable() {
-        // This action is not supported by editor
-        // We handle all the requests by ourselves
-        return null;
     }
 
     @Override
@@ -174,8 +169,8 @@ class EditorInputConnection extends BaseInputConnection {
         //it can be quite large text and costs time, which will finally cause ANR
         int left = getCursor().getLeft();
         int right = getCursor().getRight();
-        if (right - left > 1000) {
-            right = left + 1000;
+        if (right - left > TEXT_LENGTH_LIMIT) {
+            right = left + TEXT_LENGTH_LIMIT;
         }
         return left == right ? null : getTextRegion(left, right, flags);
     }
@@ -202,11 +197,27 @@ class EditorInputConnection extends BaseInputConnection {
             return false;
         }
         if (text.equals("\n")) {
-            mEditor.onKeyDown(KeyEvent.KEYCODE_ENTER, null);
+            // #67
+            sendEnterKeyEvent();
             return true;
         }
         commitTextInternal(text, true);
         return true;
+    }
+
+    /**
+     * Perform enter key pressed
+     */
+    private void sendEnterKeyEvent() {
+        long eventTime = SystemClock.uptimeMillis();
+        sendKeyEvent(new KeyEvent(eventTime, eventTime,
+                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+                KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE));
+        sendKeyEvent(new KeyEvent(SystemClock.uptimeMillis(), eventTime,
+                KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+                KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE));
     }
 
     protected void commitTextInternal(CharSequence text, boolean applyAutoIndent) {
@@ -379,6 +390,10 @@ class EditorInputConnection extends BaseInputConnection {
             mComposingEnd = mComposingStart + text.length();
             mEditor.getText().insert(mComposingLine, mComposingStart, text);
         }
+        if (text.length() == 0) {
+            finishComposingText();
+            return true;
+        }
         return true;
     }
 
@@ -507,6 +522,12 @@ class EditorInputConnection extends BaseInputConnection {
         }
 
         return mEditor.extractText(request);
+    }
+
+    @Override
+    public boolean clearMetaKeyStates(int states) {
+        mEditor.mKeyMetaStates.clearMetaStates(states);
+        return true;
     }
 
     @Override

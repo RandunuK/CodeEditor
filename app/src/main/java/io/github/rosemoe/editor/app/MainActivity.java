@@ -74,7 +74,7 @@ public class MainActivity extends Activity {
 
         SymbolInputView inputView = findViewById(R.id.symbol_input);
         inputView.bindEditor(editor);
-        inputView.addSymbols(new String[]{"->" , "{", "}", "(", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"},
+        inputView.addSymbols(new String[]{"->", "{", "}", "(", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"},
                 new String[]{"\t", "{}", "}", "(", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"});
 
         search.addTextChangedListener(new TextWatcher() {
@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
                 editor.getSearcher().search(editable.toString());
             }
         });
-        //editor.setTypefaceText(Typeface.MONOSPACE);
+        editor.setTypefaceText(Typeface.MONOSPACE);
         editor.setOverScrollEnabled(false);
         editor.setEditorLanguage(new JavaLanguage());
         editor.setNonPrintablePaintingFlags(CodeEditor.FLAG_DRAW_WHITESPACE_LEADING | CodeEditor.FLAG_DRAW_LINE_SEPARATOR);

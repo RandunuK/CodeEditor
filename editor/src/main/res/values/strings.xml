@@ -30,4 +30,6 @@
     <item name="cancel" type="string">Cancel</item>
     <item name="text_to_search" type="string">Text to search</item>
 
+    <item name="more" type="string" translatable="false" >More</item>
+
 </resources>

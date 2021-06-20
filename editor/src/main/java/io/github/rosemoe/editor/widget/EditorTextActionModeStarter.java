@@ -114,6 +114,11 @@ class EditorTextActionModeStarter implements CodeEditor.EditorTextActionPresente
     }
 
     @Override
+    public void onUpdate(int updateReason) {
+
+    }
+
+    @Override
     public void onSelectedTextClicked(MotionEvent event) {
         long packed = mEditor.getPointPositionOnScreen(event.getX(), event.getY());
         int line = IntPair.getFirst(packed);
@@ -123,11 +128,18 @@ class EditorTextActionModeStarter implements CodeEditor.EditorTextActionPresente
     }
 
     @Override
-    public void onExit() {
+    public void onTextSelectionEnd() {
+
+    }
+
+    @Override
+    public boolean onExit() {
         if (mActionMode != null) {
             mActionMode.finish();
             mActionMode = null;
+            return true;
         }
+        return false;
     }
 
     @Override
