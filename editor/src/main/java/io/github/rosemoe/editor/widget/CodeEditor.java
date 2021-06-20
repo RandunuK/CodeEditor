@@ -184,6 +184,7 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
     private boolean mDisplayLnPanel;
     private boolean mOverScrollEnabled;
     private boolean mLineNumberEnabled;
+    private boolean mDisableLineNumberHorizontalScroll;
     private boolean mBlockLineEnabled;
     private boolean mAutoCompletionEnabled;
     private boolean mCompletionOnComposing;
@@ -673,8 +674,6 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
             mTextActionPresenter = new EditorTextActionModeStarter(this);
         } else if (mode == TextActionMode.POPUP_WINDOW_2) {
             mTextActionPresenter = new TextActionPopupWindow(this);
-        } else {
-            mTextActionPresenter = new EditorTextActionWindowV1(this);
         }
     }
 
@@ -874,15 +873,19 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
         drawRows(canvas, textOffset, postDrawLineNumbers, postDrawCursor);
 
         offsetX = -getOffsetX();
+        float _offsetX = offsetX;
 
         if (isLineNumberEnabled()) {
-            int zeroOffsetX = 0;
-            drawLineNumberBackground(canvas, zeroOffsetX, lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_NUMBER_BACKGROUND));
-            drawDivider(canvas, zeroOffsetX + lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_DIVIDER));
+
+            if (mDisableLineNumberHorizontalScroll) {
+                _offsetX = 0;
+            }
+            drawLineNumberBackground(canvas, _offsetX, lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_NUMBER_BACKGROUND));
+            drawDivider(canvas, _offsetX + lineNumberWidth + mDividerMargin, color.getColor(EditorColorScheme.LINE_DIVIDER));
             int lineNumberColor = mColors.getColor(EditorColorScheme.LINE_NUMBER);
             for (int i = 0; i < postDrawLineNumbers.size(); i++) {
                 long packed = postDrawLineNumbers.get(i);
-                drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), offsetX, lineNumberWidth, lineNumberColor);
+                drawLineNumber(canvas, IntPair.getFirst(packed), IntPair.getSecond(packed), _offsetX, lineNumberWidth, lineNumberColor);
             }
         }
 
@@ -3408,6 +3411,15 @@ public class CodeEditor extends View implements ContentListener, TextAnalyzer.Ca
      */
     public boolean isLineNumberEnabled() {
         return mLineNumberEnabled;
+    }
+
+    /**
+     * Disable line number panels' horizontal scroll
+     *
+     * @param disableLineNumberHorizontalScroll
+     */
+    public void setDisableLineNumberHorizontalScroll(boolean disableLineNumberHorizontalScroll) {
+        this.mDisableLineNumberHorizontalScroll = disableLineNumberHorizontalScroll;
     }
 
     /**
