@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?><!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  ~   Copyright 2020-2021 Rosemoe
+  ~    sora-editor - the awesome code editor for Android
+  ~    https://github.com/Rosemoe/sora-editor
+  ~    Copyright (C) 2020-2022  Rosemoe
   ~
-  ~   Licensed under the Apache License, Version 2.0 (the "License");
-  ~   you may not use this file except in compliance with the License.
-  ~   You may obtain a copy of the License at
+  ~     This library is free software; you can redistribute it and/or
+  ~     modify it under the terms of the GNU Lesser General Public
+  ~     License as published by the Free Software Foundation; either
+  ~     version 2.1 of the License, or (at your option) any later version.
   ~
-  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~     This library is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~     Lesser General Public License for more details.
   ~
-  ~   Unless required by applicable law or agreed to in writing, software
-  ~   distributed under the License is distributed on an "AS IS" BASIS,
-  ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~   See the License for the specific language governing permissions and
-  ~   limitations under the License.
+  ~     You should have received a copy of the GNU Lesser General Public
+  ~     License along with this library; if not, write to the Free Software
+  ~     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+  ~     USA
+  ~
+  ~     Please contact Rosemoe by email 2073412493@qq.com if you need
+  ~     additional information or have any questions
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:title="@string/cursor_actions">
         <menu>
             <item
@@ -40,16 +49,6 @@
                 android:title="@string/end" />
         </menu>
     </item>
-    <item android:title="@string/text_actions">
-        <menu>
-            <item
-                android:id="@+id/text_undo"
-                android:title="@string/undo" />
-            <item
-                android:id="@+id/text_redo"
-                android:title="@string/redo" />
-        </menu>
-    </item>
     <item android:title="@string/search_text">
         <menu>
             <item
@@ -61,21 +60,32 @@
                 android:title="@string/search_panel" />
         </menu>
     </item>
-    <item
-        android:id="@+id/code_navigation"
-        android:title="@string/code_navigation" />
-    <item
-        android:id="@+id/text_wordwrap"
-        android:checkable="true"
-        android:title="@string/wordwrap" />
-    <item
-        android:id="@+id/editor_line_number"
-        android:checkable="true"
-        android:checked="true"
-        android:title="@string/line_number_visibility" />
+    <item android:title="@string/feature_switches">
+        <menu>
+            <item
+                android:id="@+id/text_wordwrap"
+                android:checkable="true"
+                android:title="@string/wordwrap" />
+            <item
+                android:id="@+id/editor_line_number"
+                android:checkable="true"
+                android:checked="true"
+                android:title="@string/line_number_visibility" />
+            <item
+                android:id="@+id/pin_line_number"
+                android:checkable="true"
+                android:title="@string/pin_line_number"/>
+            <item
+                android:id="@+id/magnifier"
+                android:checkable="true"
+                android:checked="true"
+                android:title="@string/magnifier"/>
+        </menu>
+    </item>
     <item
         android:id="@+id/code_format"
-        android:title="@string/format" />
+        android:title="@string/format"
+        android:visible="false"/>
     <item
         android:id="@+id/switch_language"
         android:title="@string/switch_language" />
@@ -90,5 +100,22 @@
         android:title="@string/clear_crash_log"/>
     <item
         android:id="@+id/open_debug_logs"
+        android:visible="false"
         android:title="@string/open_debug_logs"/>
+    <item
+       android:id="@+id/text_undo"
+       android:title="@string/undo" 
+       android:icon="@drawable/undo"
+       app:showAsAction="always"/>
+    <item
+        android:id="@+id/text_redo"
+        android:title="@string/redo" 
+        android:icon="@drawable/redo"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/enable_highlight"
+        android:title="Highlight update(Debug)"
+        android:checkable="true"
+        android:checked="true"
+        android:visible="false"/>
 </menu>
